@@ -39,6 +39,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
+    _createFolder();
     requestPermission();
   }
 
@@ -58,7 +59,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  static GlobalKey<AnimatedListState> animatedListKey =
+  final GlobalKey<AnimatedListState> animatedListKey =
       GlobalKey<AnimatedListState>();
 
   @override
@@ -181,6 +182,9 @@ class _HomeState extends State<Home> {
             print("error");
             return CircularProgressIndicator();
           }
+          // if (Provider.of<DocumentProvider>(context).allDocuments.length ! > 1) {
+          //   return buildCard();
+          // }
           return Container(
               padding: EdgeInsets.all(10),
               // height: MediaQuery.of(context).size.height - 81,
@@ -191,30 +195,17 @@ class _HomeState extends State<Home> {
   }
 
   Widget _createGridView() {
-    // return GridView.builder(
-    //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-    //       crossAxisCount: 3,
-    //       crossAxisSpacing: 5.0,
-    //       mainAxisSpacing: 5.0,
-    //       childAspectRatio: 8.0 / 9.0),
-    //   itemBuilder: (BuildContext context, int index) {
-    //     return Container(
-    //         height: double.infinity,
-    //         width: double.infinity,
-    //         color: Colors.blue);
-    //     print("${double.infinity}");
-    //   },
-    //   itemCount: Provider.of<DocumentProvider>(context).allDocuments.length - 1,
-    // );
     var mSize = MediaQuery.of(context).size;
 
     /*24 is for notification bar on Android*/
-    final double itemHeight = (mSize.height - kToolbarHeight - 24) / 2;
+    final double itemHeight = (mSize.height - kToolbarHeight) / 2;
     final double itemWidth = mSize.width / 2;
     return GridView.count(
+      key: animatedListKey,
       scrollDirection: Axis.vertical, //default
       reverse: false,
-      crossAxisCount: 3,
+      crossAxisCount: 2,
+
       crossAxisSpacing: 4.0,
       mainAxisSpacing: 4.0,
       childAspectRatio: (itemWidth / itemHeight),
@@ -236,6 +227,7 @@ class _HomeState extends State<Home> {
     File fileGallery = await ImagePicker.pickImage(source: source);
     if (fileGallery != null) {
       _file = fileGallery;
+
       RenderBox imageBox = animatedListKey.currentContext.findRenderObject();
       width = imageBox.size.width;
       height = imageBox.size.height;
@@ -270,66 +262,66 @@ class _HomeState extends State<Home> {
     Provider.of<DocumentProvider>(context, listen: false).getDocuments();
   }
 
-  Widget buildCard(Animation animation) {
-    return SizeTransition(
-        sizeFactor: animation,
-        child: Container(
-          child: Stack(
+  Widget buildCard() {
+    // return SizeTransition(
+    // sizeFactor: animation,
+    return Container(
+      child: Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          Container(
+            margin: EdgeInsets.only(top: 120),
             alignment: Alignment.topCenter,
-            children: [
-              Container(
-                margin: EdgeInsets.only(top: 120),
-                alignment: Alignment.topCenter,
-                child: Column(
-                  children: [
-                    Image.asset("lib/Model/images/documents.png",
-                        fit: BoxFit.fill,
-                        color: Colors.green,
-                        height: 100,
-                        width: 100),
-                    SizedBox(height: 20),
-                    Text(
-                      "you do not have yet any",
-                      textAlign: TextAlign.start,
-                      style: TextStyle(
-                          color: Color(0xffD0D0D0),
-                          decoration: TextDecoration.none,
-                          fontSize: 14.0,
-                          fontStyle: FontStyle.italic),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      "scanned documents !!",
-                      textAlign: TextAlign.start,
-                      style: TextStyle(
-                          color: Color(0xff002C10),
-                          decoration: TextDecoration.none,
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w900),
-                    ),
-                  ],
+            child: Column(
+              children: [
+                Image.asset("lib/Model/images/documents.png",
+                    fit: BoxFit.fill,
+                    color: Colors.green,
+                    height: 100,
+                    width: 100),
+                SizedBox(height: 20),
+                Text(
+                  "you do not have yet any",
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                      color: Color(0xffD0D0D0),
+                      decoration: TextDecoration.none,
+                      fontSize: 14.0,
+                      fontStyle: FontStyle.italic),
                 ),
+                SizedBox(height: 5),
+                Text(
+                  "scanned documents !!",
+                  textAlign: TextAlign.start,
+                  style: TextStyle(
+                      color: Color(0xff002C10),
+                      decoration: TextDecoration.none,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w900),
+                ),
+              ],
+            ),
 
-                // margin: EdgeInsets.only(top: 120),
-                // alignment: Alignment.topCenter,
-                // // child: Image.asset('lib/Model/images/docIcon.png')
-                // child: Image.asset("lib/Model/images/documents.png",
-                //     fit: BoxFit.fill,
-                //     color: Colors.green,
-                //     height: 100,
-                //     width: 100),
-                // height: 180,
-                // width: 180,
-              )
-            ],
-          ),
-          // ),
-          width: double.infinity,
-          height: (MediaQuery.of(context).size.height -
-              AppBar().preferredSize.height -
-              MediaQuery.of(context).padding.top),
-          color: Colors.white,
-        ));
+            // margin: EdgeInsets.only(top: 120),
+            // alignment: Alignment.topCenter,
+            // // child: Image.asset('lib/Model/images/docIcon.png')
+            // child: Image.asset("lib/Model/images/documents.png",
+            //     fit: BoxFit.fill,
+            //     color: Colors.green,
+            //     height: 100,
+            //     width: 100),
+            // height: 180,
+            // width: 180,
+          )
+        ],
+      ),
+      // ),
+      width: double.infinity,
+      height: (MediaQuery.of(context).size.height -
+          AppBar().preferredSize.height -
+          MediaQuery.of(context).padding.top),
+      color: Colors.white,
+    );
   }
 
   Widget _buildDocumentCard(int index, Animation animation) {
@@ -722,7 +714,6 @@ class _HomeState extends State<Home> {
     } else {
       print("not exist");
       root.create();
-
       final subPath = Directory(directoryPath);
       subPath.create();
     }
@@ -755,7 +746,7 @@ class SelectCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AspectRatio(
-                  aspectRatio: t / .85,
+                  aspectRatio: t / .75,
                   child: Padding(
                     padding: EdgeInsets.all(0),
                     child: Image.file(

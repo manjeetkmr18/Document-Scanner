@@ -1,3 +1,4 @@
+import 'package:documentscanner2/settings.dart';
 import 'package:flutter/material.dart';
 
 class DocDrawer extends StatelessWidget {
@@ -79,6 +80,9 @@ class DocDrawer extends StatelessWidget {
             "All Docs",
             style: TextStyle(color: Color(0xff002C10)),
           ),
+          onTap: () {
+            Navigator.pop(context);
+          },
         ),
         Container(
           // color: Colors.white.withOpacity(0.2),
@@ -93,6 +97,9 @@ class DocDrawer extends StatelessWidget {
             "Export as a PDF",
             style: TextStyle(color: Color(0xff002C10)),
           ),
+          onTap: () {
+            Navigator.pop(context);
+          },
         ),
         Container(
           // color: Colors.white.withOpacity(0.2),
@@ -107,6 +114,9 @@ class DocDrawer extends StatelessWidget {
             "Import & Export files",
             style: TextStyle(color: Color(0xff002C10)),
           ),
+          onTap: () {
+            Navigator.pop(context);
+          },
         ),
         Container(
           // color: Colors.white.withOpacity(0.2),
@@ -121,6 +131,9 @@ class DocDrawer extends StatelessWidget {
             "Notifications",
             style: TextStyle(color: Color(0xff002C10)),
           ),
+          onTap: () {
+            Navigator.pop(context);
+          },
         ),
         Container(
           // color: Colors.white.withOpacity(0.2),
@@ -135,6 +148,9 @@ class DocDrawer extends StatelessWidget {
             "About us",
             style: TextStyle(color: Color(0xff002C10)),
           ),
+          onTap: () {
+            Navigator.pop(context);
+          },
         ),
         Container(
           // color: Colors.white.withOpacity(0.2),
@@ -149,6 +165,11 @@ class DocDrawer extends StatelessWidget {
             "Settings",
             style: TextStyle(color: Color(0xff002C10)),
           ),
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.of(context)
+                .push(MaterialPageRoute(builder: (context) => Settings()));
+          },
         ),
         Container(
           // color: Colors.white.withOpacity(0.2),
@@ -163,6 +184,9 @@ class DocDrawer extends StatelessWidget {
             "Help",
             style: TextStyle(color: Color(0xff002C10)),
           ),
+          onTap: () {
+            Navigator.pop(context);
+          },
         )
       ],
     );

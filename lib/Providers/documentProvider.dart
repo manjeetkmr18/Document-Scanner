@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -100,6 +101,20 @@ class DocumentProvider extends ChangeNotifier {
         backgroundColor: Colors.black,
         textColor: Colors.white,
         fontSize: 16.0);
+
+//
+    // builder: (context) => NewImage(fileGallery, animatedListKey)));
+    // builder: (context) => ShowImage(
+    //       tl: new Offset(20, 20),
+    //       tr: new Offset(width - 20, 20),
+    //       bl: new Offset(20, height - 20),
+    //       br: new Offset(width - 20, height - 20),
+    //       width: width,
+    //       height: height,
+    //       file: fileGallery,
+    //       imagePixelSize: imagePixelSize,
+    //       animatedListKey: animatedListKey,
+    //     )));
   }
 
   void deleteDocument(int index, String key) async {

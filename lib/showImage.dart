@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'package:documentscanner2/Home.dart';
 import 'package:documentscanner2/NewImage.dart';
 import 'package:documentscanner2/Providers/documentProvider.dart';
 import 'package:documentscanner2/cropImage.dart';
@@ -591,164 +592,189 @@ class _ShowImageState extends State<ShowImage> {
     });
   }
 
-  int _radioValue = 0;
   void _saveModalBottomSheet(context) {
     showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
-        builder: (BuildContext bc) {
-          return Container(
-              height: 330,
-              decoration: BoxDecoration(),
-              padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-              child: Column(
-                children: [
-                  Align(
-                    child: IconButton(
-                      icon: Icon(Icons.cancel, color: Colors.black),
-                      onPressed: () async {
-                        isShowingBottomSheet = false;
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    alignment: Alignment.topRight,
-                  ),
-                  SizedBox(height: 5),
-                  Card(
-                      clipBehavior: Clip.antiAlias,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20.0),
+        builder: (BuildContext context) {
+          return StatefulBuilder(
+            builder: (context, setStateChild) {
+              //////////////////////////////////////
+              return Container(
+                  height: 330,
+                  decoration: BoxDecoration(),
+                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                  child: Column(
+                    children: [
+                      Align(
+                        child: IconButton(
+                          icon: Icon(Icons.cancel, color: Colors.black),
+                          onPressed: () async {
+                            isShowingBottomSheet = false;
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        alignment: Alignment.topRight,
                       ),
-                      elevation: 4,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(8, 20, 20, 20),
-                        child: Column(
-                          children: [
-                            Row(
+                      SizedBox(height: 5),
+                      Card(
+                          clipBehavior: Clip.antiAlias,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20.0),
+                          ),
+                          elevation: 4,
+                          color: Colors.white,
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(8, 20, 20, 20),
+                            child: Column(
                               children: [
-                                // Padding(padding: EdgeInsets.fromLTRB(2, 10, 20, 0)),
-                                Text(
-                                  'Save as',
-                                  style: TextStyle(
-                                      color: Color(0xff002C10),
-                                      decoration: TextDecoration.none,
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.bold),
-                                ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    ButtonBar(
-                                      alignment: MainAxisAlignment.start,
+                                    // Padding(padding: EdgeInsets.fromLTRB(2, 10, 20, 0)),
+                                    Text(
+                                      'Save as',
+                                      style: TextStyle(
+                                          color: Color(0xff002C10),
+                                          decoration: TextDecoration.none,
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
                                       children: [
-                                        Radio(
-                                            value: 1,
-                                            groupValue: selectedRadio,
-                                            activeColor: Colors.green,
-                                            onChanged: (val) {
-                                              setSelectedRadio(val);
-                                              print("Radio $val");
-                                            }),
-                                        Text(
-                                          "Pdf",
-                                          style: TextStyle(
-                                              fontSize: 13.0,
-                                              fontWeight: FontWeight.normal),
-                                        ),
-                                        Radio(
-                                            value: 2,
-                                            groupValue: selectedRadio,
-                                            activeColor: Colors.green,
-                                            onChanged: (val) {
-                                              setSelectedRadio(val);
-                                              print("Radio 2 $val");
-                                            }),
-                                        Text(
-                                          "Image",
-                                          style: TextStyle(
-                                              fontSize: 13.0,
-                                              fontWeight: FontWeight.normal),
+                                        ButtonBar(
+                                          alignment: MainAxisAlignment.start,
+                                          children: [
+                                            Radio(
+                                                value: 1,
+                                                groupValue: selectedRadio,
+                                                activeColor: Colors.green,
+                                                onChanged: (val) {
+                                                  // setSelectedRadio(val);
+                                                  setStateChild(
+                                                    () {
+                                                      selectedRadio = val;
+                                                      print(
+                                                          " my radio...$selectedRadio");
+                                                    },
+                                                  );
+                                                  print("Radio $val");
+                                                }),
+                                            Text(
+                                              "Pdf",
+                                              style: TextStyle(
+                                                  fontSize: 13.0,
+                                                  fontWeight:
+                                                      FontWeight.normal),
+                                            ),
+                                            Radio(
+                                                value: 2,
+                                                groupValue: selectedRadio,
+                                                activeColor: Colors.green,
+                                                onChanged: (val) {
+                                                  setStateChild(
+                                                    () {
+                                                      selectedRadio = val;
+                                                      print(
+                                                          " my radio...$selectedRadio");
+                                                    },
+                                                  );
+                                                  setSelectedRadio(val);
+                                                  print("Radio 2 $val");
+                                                }),
+                                            Text(
+                                              "Image",
+                                              style: TextStyle(
+                                                  fontSize: 13.0,
+                                                  fontWeight:
+                                                      FontWeight.normal),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Align(),
-                                Text(
-                                  ' Add to folder',
-                                  style: TextStyle(
-                                      color: Color(0xff002C10),
-                                      decoration: TextDecoration.none,
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.bold),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Align(),
+                                    Text(
+                                      ' Add to folder',
+                                      style: TextStyle(
+                                          color: Color(0xff002C10),
+                                          decoration: TextDecoration.none,
+                                          fontSize: 14.0,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    SizedBox(
+                                      height: 20,
+                                    ),
+                                    DropdownButton<String>(
+                                      isExpanded: true,
+                                      icon: Icon(Icons.arrow_drop_down),
+                                      iconSize: 24,
+                                      elevation: 16,
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 13),
+                                      underline: Container(
+                                        height: 1,
+                                        color: Colors.grey,
+                                      ),
+                                      onChanged: (String data) {
+                                        setState(() {
+                                          dropdownValue = data;
+                                        });
+                                      },
+                                      items: directoryItems
+                                          .map<DropdownMenuItem<String>>(
+                                              (String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value.split("/")[
+                                              value.split("/").length - 1]),
+                                        );
+                                      }).toList(),
+                                      value: dropdownValue,
+                                    ),
+                                  ],
                                 ),
                                 SizedBox(
                                   height: 20,
                                 ),
-                                DropdownButton<String>(
-                                  isExpanded: true,
-                                  icon: Icon(Icons.arrow_drop_down),
-                                  iconSize: 24,
-                                  elevation: 16,
-                                  style: TextStyle(
-                                      color: Colors.grey, fontSize: 13),
-                                  underline: Container(
-                                    height: 1,
-                                    color: Colors.grey,
+                                Container(
+                                  margin: EdgeInsets.only(left: 10),
+                                  width: double.infinity * .5,
+                                  height: 40.5,
+                                  child: RaisedButton(
+                                    textColor: Colors.white,
+                                    color: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(13)),
+                                    child: new Text(
+                                      "Save",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    onPressed: () async {
+                                      _convertImageToPDF();
+                                    },
                                   ),
-                                  onChanged: (String data) {
-                                    setState(() {
-                                      dropdownValue = data;
-                                    });
-                                  },
-                                  items: directoryItems
-                                      .map<DropdownMenuItem<String>>(
-                                          (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value.split(
-                                          "/")[value.split("/").length - 1]),
-                                    );
-                                  }).toList(),
-                                  value: dropdownValue,
-                                ),
+                                )
                               ],
                             ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Container(
-                              margin: EdgeInsets.only(left: 10),
-                              width: double.infinity * .5,
-                              height: 40.5,
-                              child: RaisedButton(
-                                textColor: Colors.white,
-                                color: Colors.green,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(13)),
-                                child: new Text(
-                                  "Save",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                onPressed: () async {
-                                  _convertImageToPDF();
-                                },
-                              ),
-                            )
-                          ],
-                        ),
-                      )),
-                ],
-              ));
+                          )),
+                    ],
+                  ));
+
+              ///////////////////
+            },
+          );
         });
   }
 
@@ -777,7 +803,7 @@ class _ShowImageState extends State<ShowImage> {
 
   Future<List<String>> _inFutureList() async {
     var filesList = new List<String>();
-    final folderName = "some_name";
+    final folderName = "Document Scanner";
     final root = Directory("storage/emulated/0/$folderName");
     // String directoryPath = root.path + '/bozzetto_camera';
     List dir = root.listSync();
@@ -795,12 +821,16 @@ class _ShowImageState extends State<ShowImage> {
 /**
  * Convert Image to pdf
  */
-  Future<void> _convertImageToPDF() async {
-    PdfImage pdfImage = PdfImage(pdf.document,
-        image: bytes,
-        width: widget.width.toInt(),
-        height: widget.height.toInt());
 
+  Future<void> saveImages() async {
+    if (selectedRadio == 1) {
+      _convertImageToPDF();
+    } else {
+      _convertImage();
+    }
+  }
+
+  Future<void> _convertImageToPDF() async {
     final root = Directory(dropdownValue);
 
     final imgaeFileName = "IMG_${DateTime.now().millisecondsSinceEpoch}";
@@ -815,5 +845,31 @@ class _ShowImageState extends State<ShowImage> {
           animatedListKey: widget.animatedListKey,
           angle: angle);
     });
+    _navPaymentSuccessful();
+  }
+
+  _navPaymentSuccessful() {
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => Home()),
+        ModalRoute.withName("/Home"));
+  }
+
+  Future<void> _convertImage() async {
+    final root = Directory(dropdownValue);
+
+    final imgaeFileName = "IMG_${DateTime.now().millisecondsSinceEpoch}";
+
+    await widget.file.writeAsBytes(bytes).then((_) async {
+      print(ImageSizGetter.getSize(widget.file));
+      Provider.of<DocumentProvider>(context, listen: false).saveDocument(
+          directoryname: root,
+          name: imgaeFileName,
+          documentPath: widget.file.path,
+          dateTime: DateTime.now(),
+          animatedListKey: widget.animatedListKey,
+          angle: angle);
+    });
+    _navPaymentSuccessful();
   }
 }

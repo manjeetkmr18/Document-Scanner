@@ -65,7 +65,7 @@ class DocumentProvider extends ChangeNotifier {
     ));
 
     final tempDir = directoryname;
-    String pdfPath = tempDir.path + "/${name}" + ".pdf";
+    String pdfPath = tempDir.path + "/$name" + ".pdf";
     File pdfFile = File(pdfPath);
     print(pdfPath);
     pdfFile.writeAsBytes(pdf.save());

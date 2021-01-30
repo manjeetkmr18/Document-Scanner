@@ -4,24 +4,18 @@ import 'package:documentscanner2/Search.dart';
 import 'package:documentscanner2/drawer.dart';
 import 'package:documentscanner2/pdfScreen.dart';
 import 'package:documentscanner2/showImage.dart';
+import 'package:documentscanner2/singleImage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_full_pdf_viewer/full_pdf_viewer_scaffold.dart';
-
-import 'package:package_info/package_info.dart';
 
 import 'package:flutter_share/flutter_share.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 import 'dart:io';
-
-import 'Model/documentModel.dart';
-import 'NewImage.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -137,6 +131,7 @@ class _HomeState extends State<Home> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
           onPressed: () async {
+            print('test');
             chooseImage(ImageSource.camera);
           },
           label: Row(
@@ -175,11 +170,11 @@ class _HomeState extends State<Home> {
         future: getAllDocuments(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            print("has not data");
+            // print("has not data");
             return CircularProgressIndicator();
           }
           if (snapshot.hasError) {
-            print("error");
+            // print("error");
             return CircularProgressIndicator();
           }
           // if (Provider.of<DocumentProvider>(context).allDocuments.length ! > 1) {
@@ -210,13 +205,21 @@ class _HomeState extends State<Home> {
       mainAxisSpacing: 4.0,
       childAspectRatio: (itemWidth / itemHeight),
       children: List.generate(
-          Provider.of<DocumentProvider>(context).allDocuments.length - 1,
-          (index) {
+          Provider.of<DocumentProvider>(context).allDocuments.length, (index) {
         return Center(
           child: SelectCard(
             index: index,
             itemHeight: itemHeight,
             itemWidth: itemWidth,
+            deletefun: () {
+              Navigator.pop(context);
+              DeleteDialog(
+                  index: index,
+                  dateTime:
+                      Provider.of<DocumentProvider>(context, listen: false)
+                          .allDocuments[index]
+                          .dateTime);
+            },
           ),
         );
       }),
@@ -233,32 +236,33 @@ class _HomeState extends State<Home> {
       height = imageBox.size.height;
       imagePixelSize = ImageSizGetter.getSize(_file);
 
-      Navigator.of(context).push(MaterialPageRoute(
-
-//
+      Navigator.of(context).push(
+        MaterialPageRoute(
           // builder: (context) => NewImage(fileGallery, animatedListKey)));
           builder: (context) => ShowImage(
-                tl: new Offset(20, 20),
-                tr: new Offset(width - 20, 20),
-                bl: new Offset(20, height - 20),
-                br: new Offset(width - 20, height - 20),
-                width: width,
-                height: height,
-                file: fileGallery,
-                imagePixelSize: imagePixelSize,
-                animatedListKey: animatedListKey,
-              )));
+            tl: new Offset(20, 20),
+            tr: new Offset(width - 20, 20),
+            bl: new Offset(20, height - 20),
+            br: new Offset(width - 20, height - 20),
+            width: width,
+            height: height,
+            file: fileGallery,
+            imagePixelSize: imagePixelSize,
+            animatedListKey: animatedListKey,
+          ),
+        ),
+      );
     }
   }
 
   Future<bool> getAllDocuments() async {
-    print("inside get documents");
+    // print("inside get documents");
     return await Provider.of<DocumentProvider>(context, listen: false)
         .getDocuments();
   }
 
   Future<void> onRefresh() async {
-    print("refreshed");
+    // print("refreshed");
     Provider.of<DocumentProvider>(context, listen: false).getDocuments();
   }
 
@@ -566,7 +570,7 @@ class _HomeState extends State<Home> {
               ),
               ListTile(
                 leading: Icon(Icons.print),
-                title: Text("Print"),
+                // title: Text("Print"),
                 onTap: () async {
                   Navigator.pop(context);
                   final pdf = File(pdfPath);
@@ -629,7 +633,6 @@ class _HomeState extends State<Home> {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             onPressed: () {
               Navigator.of(context).pop();
-
               Provider.of<DocumentProvider>(context, listen: false)
                   .deleteDocument(
                       index, dateTime.millisecondsSinceEpoch.toString());
@@ -702,6 +705,61 @@ class _HomeState extends State<Home> {
     );
   }
 
+  void DeleteDialog({int index, DateTime dateTime}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Container(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              "Delete file",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Divider(
+              thickness: 2,
+            ),
+            Text(
+              "Are you sure you want to delete this file?",
+              style: TextStyle(color: Colors.grey[500]),
+            )
+          ],
+        )),
+        actions: <Widget>[
+          OutlineButton(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          OutlineButton(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            onPressed: () {
+              Provider.of<DocumentProvider>(context, listen: false)
+                  .deleteDocument(
+                      index, dateTime.millisecondsSinceEpoch.toString());
+              // onRefresh();
+                     Navigator.of(context).pop();
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
   _createFolder() async {
     final folderName = "Document Scanner";
     final root = Directory("storage/emulated/0/$folderName");
@@ -710,9 +768,9 @@ class _HomeState extends State<Home> {
     if ((await root.exists())) {
       final subPath = Directory(directoryPath);
       subPath.create();
-      print("exist");
+      // print("exist");
     } else {
-      print("not exist");
+      // print("not exist");
       root.create();
       final subPath = Directory(directoryPath);
       subPath.create();
@@ -723,51 +781,69 @@ class _HomeState extends State<Home> {
 class SelectCard extends StatelessWidget {
   //           child: SelectCard(index: index,itemHeight: itemHeight, itemWidth: itemWidth,),
 
-  const SelectCard({Key key, this.index, this.itemWidth, this.itemHeight})
+  const SelectCard(
+      {Key key, this.index, this.itemWidth, this.itemHeight, this.deletefun})
       : super(key: key);
   final int index;
   final double itemWidth;
   final double itemHeight;
+  final Function deletefun;
 
   @override
   Widget build(BuildContext context) {
     var t = itemWidth / itemHeight;
-    print(
-        "me  ${Provider.of<DocumentProvider>(context).allDocuments[index].name}");
+    // print(
+    //     "me  ${Provider.of<DocumentProvider>(context).allDocuments[index].name}");
 
-    return Container(
-        height: 250,
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          elevation: 1.0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                  aspectRatio: t / .75,
-                  child: Padding(
-                    padding: EdgeInsets.all(0),
-                    child: Image.file(
-                      File(Provider.of<DocumentProvider>(context)
-                          .allDocuments[index]
-                          .documentPath),
-                      fit: BoxFit.cover,
-                    ),
-                  )),
-              Padding(
-                padding: EdgeInsets.only(left: 4, top: 5),
-                child: Text(
-                  "${Provider.of<DocumentProvider>(context).allDocuments[index].name}",
-                  style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 10.0,
-                      fontWeight: FontWeight.bold),
-                ),
-              )
-            ],
-          ),
-        ));
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => SingleImage(
+                  imgFile: File(Provider.of<DocumentProvider>(context)
+                      .allDocuments[index]
+                      .documentPath),
+                  fileName: Provider.of<DocumentProvider>(context)
+                      .allDocuments[index]
+                      .name)),
+        );
+      },
+      onLongPress: deletefun,
+      child: Container(
+          height: 280,
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            elevation: 1.0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                    aspectRatio: t / .70,
+                    child: Padding(
+                      padding: EdgeInsets.all(0),
+                      child: Image.file(
+                        File(Provider.of<DocumentProvider>(context)
+                            .allDocuments[index]
+                            .documentPath),
+                        fit: BoxFit.cover,
+                      ),
+                    )),
+                Padding(
+                  padding: EdgeInsets.only(left: 4, top: 5),
+                  child: Text(
+                    "${Provider.of<DocumentProvider>(context).allDocuments[index].name}",
+                    style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 10.0,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            ),
+          )),
+    );
   }
 }

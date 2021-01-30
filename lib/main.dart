@@ -34,6 +34,8 @@ class _MyAppState extends State<MyApp> {
       value: DocumentProvider(),
       child: MaterialApp(
         theme: ThemeData(
+            primarySwatch: Colors.green,
+            primaryColor: Colors.green,
             appBarTheme: AppBarTheme(color: ThemeData.dark().canvasColor),
             textSelectionColor: Colors.blueGrey,
             floatingActionButtonTheme: FloatingActionButtonThemeData(

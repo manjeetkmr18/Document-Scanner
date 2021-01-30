@@ -1,14 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:documentscanner2/crop_painter.dart';
-import 'package:documentscanner2/showImage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_isolate/flutter_isolate.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 
 class CropImage extends StatefulWidget {
@@ -81,7 +77,7 @@ class _CropImageState extends State<CropImage> {
                           y1 >= 0 &&
                           x1 < width / 2 &&
                           y1 < height / 2) {
-                        print(details.localPosition);
+                        // print(details.localPosition);
                         setState(() {
                           tl = details.localPosition;
                         });
@@ -134,7 +130,7 @@ class _CropImageState extends State<CropImage> {
                           y1 >= 0 &&
                           x1 < width / 2 &&
                           y1 < height / 2) {
-                        print(details.localPosition);
+                        // print(details.localPosition);
                         setState(() {
                           tl = details.localPosition;
                         });

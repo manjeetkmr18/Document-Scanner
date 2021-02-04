@@ -1,11 +1,8 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:documentscanner2/Model/documentModel.dart';
 import 'package:documentscanner2/pdfScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_share/flutter_share.dart';
-import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
 import 'Providers/documentProvider.dart';

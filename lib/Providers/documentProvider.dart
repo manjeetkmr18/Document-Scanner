@@ -6,8 +6,6 @@ import 'package:documentscanner2/Model/documentModel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:pdf/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -18,6 +16,7 @@ class DocumentProvider extends ChangeNotifier {
     allDocuments = [];
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     print(sharedPreferences.getKeys());
+
     sharedPreferences.getKeys().forEach((key) {
       var jsonDocument = json.decode(sharedPreferences.getString(key));
       DocumentModel document = DocumentModel(
@@ -65,7 +64,7 @@ class DocumentProvider extends ChangeNotifier {
     ));
 
     final tempDir = directoryname;
-    String pdfPath = tempDir.path + "/${name}" + ".pdf";
+    String pdfPath = tempDir.path + "/$name" + ".pdf";
     File pdfFile = File(pdfPath);
     print(pdfPath);
     pdfFile.writeAsBytes(pdf.save());

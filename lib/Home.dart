@@ -4,24 +4,20 @@ import 'package:documentscanner2/Search.dart';
 import 'package:documentscanner2/drawer.dart';
 import 'package:documentscanner2/pdfScreen.dart';
 import 'package:documentscanner2/showImage.dart';
+import 'package:documentscanner2/singleImage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_full_pdf_viewer/full_pdf_viewer_scaffold.dart';
-
-import 'package:package_info/package_info.dart';
 
 import 'package:flutter_share/flutter_share.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 import 'dart:io';
 
-import 'Model/documentModel.dart';
-import 'NewImage.dart';
+import 'CreateFolderDialog.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -34,13 +30,28 @@ class _HomeState extends State<Home> {
   bool isFile = false;
 
   Size imagePixelSize;
+  List<String> directoryItems = List();
 
   double width, height;
   @override
   void initState() {
     super.initState();
-    _createFolder();
+    // directoryItems = List();
+    _createFolder('images');
     requestPermission();
+    otherFunction();
+  }
+
+  otherFunction() async {
+    await _inFutureList().then((value) {
+      setState(() {
+        value.forEach((element) {
+          directoryItems.add(element.split("/")[
+              element.split("/").lastIndexOf(element, element.length - 1)]);
+        });
+        // directoryItems = value;
+      });
+    });
   }
 
   Future<void> requestPermission() async {
@@ -104,17 +115,25 @@ class _HomeState extends State<Home> {
             ),
             onPressed: () async {
               var status = await Permission.storage.status;
-
               if (status.isGranted) {
-                _createFolder();
-              } else if (status.isUndetermined) {
+                var data = await showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return CreateFolderDialog(
+                        title: "Custom Dialog Demo",
+                        descriptions:
+                            "Hii all this is a custom dialog in flutter and  you will be use in your flutter applications",
+                        text: "Create folder",
+                      );
+                    });
+                print("directory name: ${data}");
+                directoryItems.add(data);
+              } else {
                 Map<Permission, PermissionStatus> statuses = await [
                   Permission.storage,
                   Permission.camera,
                 ].request();
                 print(statuses[Permission.storage]);
-              } else {
-                print("BOT Allow");
               }
 
               // chooseImage(ImageSource.gallery);
@@ -137,6 +156,7 @@ class _HomeState extends State<Home> {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(13)),
           onPressed: () async {
+            print('test');
             chooseImage(ImageSource.camera);
           },
           label: Row(
@@ -175,20 +195,71 @@ class _HomeState extends State<Home> {
         future: getAllDocuments(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            print("has not data");
+            // print("has not data");
             return CircularProgressIndicator();
           }
           if (snapshot.hasError) {
-            print("error");
+            // print("error");
             return CircularProgressIndicator();
           }
-          // if (Provider.of<DocumentProvider>(context).allDocuments.length ! > 1) {
-          //   return buildCard();
-          // }
+
           return Container(
-              padding: EdgeInsets.all(10),
-              // height: MediaQuery.of(context).size.height - 81,
-              child: _createGridView());
+            padding: EdgeInsets.all(10),
+            child: Container(
+              child: Column(
+                children: [
+                  Container(
+                    // color: Colors.red,
+                    height: 25,
+                    width: MediaQuery.of(context).size.width,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Folder"),
+                        Container(
+                          // color:Colors.green,
+                          width: 60,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Sort"),
+                              // SizedBox(width:5),
+                              InkWell(onTap: () {}, child: Icon(Icons.sort))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  createForlderView(context),
+                  Container(
+                    // color: Colors.red,
+                    height: 25,
+                    width: MediaQuery.of(context).size.width,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Folder"),
+                        Container(
+                          // color:Colors.green,
+                          width: 60,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Sort"),
+                              // SizedBox(width:5),
+                              InkWell(onTap: () {}, child: Icon(Icons.sort))
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _createGridView()
+                ],
+              ),
+            ),
+          );
         },
       ),
     );
@@ -200,26 +271,48 @@ class _HomeState extends State<Home> {
     /*24 is for notification bar on Android*/
     final double itemHeight = (mSize.height - kToolbarHeight) / 2;
     final double itemWidth = mSize.width / 2;
-    return GridView.count(
-      key: animatedListKey,
-      scrollDirection: Axis.vertical, //default
-      reverse: false,
-      crossAxisCount: 2,
+    int fileItemCount =
+        Provider.of<DocumentProvider>(context).allDocuments.length;
 
-      crossAxisSpacing: 4.0,
-      mainAxisSpacing: 4.0,
-      childAspectRatio: (itemWidth / itemHeight),
-      children: List.generate(
-          Provider.of<DocumentProvider>(context).allDocuments.length - 1,
-          (index) {
-        return Center(
-          child: SelectCard(
-            index: index,
-            itemHeight: itemHeight,
-            itemWidth: itemWidth,
-          ),
-        );
-      }),
+    int gridItemCount = 0;
+
+    if (fileItemCount > 1) {
+      gridItemCount = fileItemCount - 1;
+    } else {
+      gridItemCount = 0;
+    }
+
+    return Expanded(
+      child: Container(
+        height: 100,
+        child: GridView.count(
+          key: animatedListKey,
+          scrollDirection: Axis.vertical, //default
+          reverse: false,
+          crossAxisCount: 2,
+          crossAxisSpacing: 4.0,
+          mainAxisSpacing: 4.0,
+          childAspectRatio: (itemWidth / itemHeight),
+          children: List.generate(gridItemCount, (index) {
+            return Center(
+              child: SelectCard(
+                index: index,
+                itemHeight: itemHeight,
+                itemWidth: itemWidth,
+                deletefun: () {
+                  Navigator.pop(context);
+                  DeleteDialog(
+                      index: index,
+                      dateTime:
+                          Provider.of<DocumentProvider>(context, listen: false)
+                              .allDocuments[index]
+                              .dateTime);
+                },
+              ),
+            );
+          }),
+        ),
+      ),
     );
   }
 
@@ -233,32 +326,33 @@ class _HomeState extends State<Home> {
       height = imageBox.size.height;
       imagePixelSize = ImageSizGetter.getSize(_file);
 
-      Navigator.of(context).push(MaterialPageRoute(
-
-//
+      Navigator.of(context).push(
+        MaterialPageRoute(
           // builder: (context) => NewImage(fileGallery, animatedListKey)));
           builder: (context) => ShowImage(
-                tl: new Offset(20, 20),
-                tr: new Offset(width - 20, 20),
-                bl: new Offset(20, height - 20),
-                br: new Offset(width - 20, height - 20),
-                width: width,
-                height: height,
-                file: fileGallery,
-                imagePixelSize: imagePixelSize,
-                animatedListKey: animatedListKey,
-              )));
+            tl: Offset(20, 20),
+            tr: Offset(width - 20, 20),
+            bl: Offset(20, height - 20),
+            br: Offset(width - 20, height - 20),
+            width: width,
+            height: height,
+            file: fileGallery,
+            imagePixelSize: imagePixelSize,
+            animatedListKey: animatedListKey,
+          ),
+        ),
+      );
     }
   }
 
   Future<bool> getAllDocuments() async {
-    print("inside get documents");
+    // print("inside get documents");
     return await Provider.of<DocumentProvider>(context, listen: false)
         .getDocuments();
   }
 
   Future<void> onRefresh() async {
-    print("refreshed");
+    // print("refreshed");
     Provider.of<DocumentProvider>(context, listen: false).getDocuments();
   }
 
@@ -566,7 +660,7 @@ class _HomeState extends State<Home> {
               ),
               ListTile(
                 leading: Icon(Icons.print),
-                title: Text("Print"),
+                // title: Text("Print"),
                 onTap: () async {
                   Navigator.pop(context);
                   final pdf = File(pdfPath);
@@ -629,7 +723,6 @@ class _HomeState extends State<Home> {
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             onPressed: () {
               Navigator.of(context).pop();
-
               Provider.of<DocumentProvider>(context, listen: false)
                   .deleteDocument(
                       index, dateTime.millisecondsSinceEpoch.toString());
@@ -702,10 +795,65 @@ class _HomeState extends State<Home> {
     );
   }
 
-  _createFolder() async {
+  void DeleteDialog({int index, DateTime dateTime}) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Container(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              "Delete file",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Divider(
+              thickness: 2,
+            ),
+            Text(
+              "Are you sure you want to delete this file?",
+              style: TextStyle(color: Colors.grey[500]),
+            )
+          ],
+        )),
+        actions: <Widget>[
+          OutlineButton(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "Cancel",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          OutlineButton(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            onPressed: () {
+              Provider.of<DocumentProvider>(context, listen: false)
+                  .deleteDocument(
+                      index, dateTime.millisecondsSinceEpoch.toString());
+              // onRefresh();
+              Navigator.of(context).pop();
+            },
+            child: Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  _createFolder(String dirName) async {
     final folderName = "Document Scanner";
     final root = Directory("storage/emulated/0/$folderName");
-    String directoryPath = root.path + '/images';
+    String directoryPath = root.path + '/' + dirName;
 
     if ((await root.exists())) {
       final subPath = Directory(directoryPath);
@@ -718,56 +866,118 @@ class _HomeState extends State<Home> {
       subPath.create();
     }
   }
+
+  Widget createForlderView(BuildContext context) {
+    final _width = MediaQuery.of(context).size.width;
+    final _height = MediaQuery.of(context).size.height;
+    return Expanded(
+      child: Container(
+        height: _height / 1.2,
+        child: ListView.builder(
+            // padding: ,
+            itemCount: directoryItems.length,
+            itemBuilder: (context, index) {
+              return Card(
+                  child: ListTile(
+                leading: Container(
+                  height: 30,
+                  width: 30,
+                  child: Icon(Icons.folder, color: Colors.brown),
+                ),
+                title: Text(directoryItems[index]),
+                subtitle: Text("15 items"),
+                trailing:
+                    IconButton(icon: Icon(Icons.more_vert), onPressed: () {}),
+              ));
+            }),
+      ),
+    );
+  }
+
+  Future<List<String>> _inFutureList() async {
+    var filesList = new List<String>();
+    final folderName = "Document Scanner";
+    final root = Directory("storage/emulated/0/$folderName");
+    // String directoryPath = root.path + '/bozzetto_camera';
+    List dir = root.listSync();
+    for (var fileOrDir in dir) {
+      if (fileOrDir is Directory) {
+        // print(fileOrDir.path);
+        filesList.add(fileOrDir.path);
+      }
+    }
+
+    await new Future.delayed(new Duration(milliseconds: 500));
+    return filesList;
+  }
 }
 
 class SelectCard extends StatelessWidget {
   //           child: SelectCard(index: index,itemHeight: itemHeight, itemWidth: itemWidth,),
 
-  const SelectCard({Key key, this.index, this.itemWidth, this.itemHeight})
+  const SelectCard(
+      {Key key, this.index, this.itemWidth, this.itemHeight, this.deletefun})
       : super(key: key);
   final int index;
   final double itemWidth;
   final double itemHeight;
+  final Function deletefun;
 
   @override
   Widget build(BuildContext context) {
     var t = itemWidth / itemHeight;
-    print(
-        "me  ${Provider.of<DocumentProvider>(context).allDocuments[index].name}");
+    // print(
+    //     "me  ${Provider.of<DocumentProvider>(context).allDocuments[index].name}");
 
-    return Container(
-        height: 250,
-        child: Card(
-          clipBehavior: Clip.antiAlias,
-          elevation: 1.0,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AspectRatio(
-                  aspectRatio: t / .75,
-                  child: Padding(
-                    padding: EdgeInsets.all(0),
-                    child: Image.file(
-                      File(Provider.of<DocumentProvider>(context)
-                          .allDocuments[index]
-                          .documentPath),
-                      fit: BoxFit.cover,
-                    ),
-                  )),
-              Padding(
-                padding: EdgeInsets.only(left: 4, top: 5),
-                child: Text(
-                  "${Provider.of<DocumentProvider>(context).allDocuments[index].name}",
-                  style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 10.0,
-                      fontWeight: FontWeight.bold),
-                ),
-              )
-            ],
-          ),
-        ));
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => SingleImage(
+                  imgFile: File(Provider.of<DocumentProvider>(context)
+                      .allDocuments[index]
+                      .documentPath),
+                  fileName: Provider.of<DocumentProvider>(context)
+                      .allDocuments[index]
+                      .name)),
+        );
+      },
+      onLongPress: deletefun,
+      child: Container(
+          height: 280,
+          child: Card(
+            clipBehavior: Clip.antiAlias,
+            elevation: 1.0,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                    aspectRatio: t / .70,
+                    child: Padding(
+                      padding: EdgeInsets.all(0),
+                      child: Image.file(
+                        File(Provider.of<DocumentProvider>(context)
+                            .allDocuments[index]
+                            .documentPath),
+                        fit: BoxFit.cover,
+                      ),
+                    )),
+                Padding(
+                  padding: EdgeInsets.only(left: 4, top: 5),
+                  child: Text(
+                    "${Provider.of<DocumentProvider>(context).allDocuments[index].name}",
+                    style: TextStyle(
+                        color: Colors.green,
+                        fontSize: 10.0,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            ),
+          )),
+    );
   }
 }

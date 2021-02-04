@@ -1,14 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:documentscanner2/crop_painter.dart';
 import 'package:documentscanner2/showImage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_isolate/flutter_isolate.dart';
 import 'package:image_size_getter/image_size_getter.dart';
 
 class NewImage extends StatefulWidget {
@@ -261,6 +257,7 @@ class _NewImageState extends State<NewImage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 FlatButton(
+                  onPressed: () {},
                   child: Text(
                     "Retake",
                     style: TextStyle(

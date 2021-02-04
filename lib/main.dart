@@ -1,14 +1,8 @@
-import 'dart:convert';
-
-import 'package:documentscanner2/Model/documentModel.dart';
 import 'package:documentscanner2/Providers/documentProvider.dart';
-import 'package:documentscanner2/showImage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import 'Home.dart';
 import 'Splash.dart';
 
 void main() {
@@ -34,6 +28,8 @@ class _MyAppState extends State<MyApp> {
       value: DocumentProvider(),
       child: MaterialApp(
         theme: ThemeData(
+            primarySwatch: Colors.green,
+            primaryColor: Colors.green,
             appBarTheme: AppBarTheme(color: ThemeData.dark().canvasColor),
             textSelectionColor: Colors.blueGrey,
             floatingActionButtonTheme: FloatingActionButtonThemeData(

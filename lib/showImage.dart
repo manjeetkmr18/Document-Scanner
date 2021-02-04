@@ -1,20 +1,16 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:documentscanner2/Home.dart';
-import 'package:documentscanner2/NewImage.dart';
 import 'package:documentscanner2/Providers/documentProvider.dart';
-import 'package:documentscanner2/cropImage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_size_getter/image_size_getter.dart';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:provider/provider.dart';
-import 'package:group_radio_button/group_radio_button.dart';
 
 class ShowImage extends StatefulWidget {
   File file;
@@ -189,13 +185,122 @@ class _ShowImageState extends State<ShowImage> {
     }
   }
 
+  Future<Null> _cropImage() async {
+    File croppedFile = await ImageCropper.cropImage(
+        sourcePath: widget.file.path,
+        aspectRatioPresets: Platform.isAndroid
+            ? [
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9
+              ]
+            : [
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio5x3,
+                CropAspectRatioPreset.ratio5x4,
+                CropAspectRatioPreset.ratio7x5,
+                CropAspectRatioPreset.ratio16x9
+              ],
+        androidUiSettings: AndroidUiSettings(
+            toolbarTitle: 'Cropper',
+            toolbarColor: Colors.green,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false),
+        iosUiSettings: IOSUiSettings(
+          title: 'Cropper',
+        ));
+    if (croppedFile != null) {
+      widget.file = croppedFile;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         toolbarHeight: 50,
         backgroundColor: Colors.green,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            if (isBottomOpened) {
+              Navigator.of(context).pop();
+              isBottomOpened = false;
+            } else if (isShowingBottomSheet) {
+              Navigator.of(context).pop();
+              isShowingBottomSheet = false;
+              return true;
+            }
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                content: Container(
+                    child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      "Discard this Scan?",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Divider(
+                      thickness: 2,
+                    ),
+                    Text(
+                      "This will discard the scans you have captured. Are you sure?",
+                      style: TextStyle(color: Colors.grey[500]),
+                    )
+                  ],
+                )),
+                actions: <Widget>[
+                  OutlineButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    onPressed: () {
+                      // showBottomSheet(context: context, builder: (context)=>Container(
+                      //   color: Colors.red,
+                      // ));
+                      Route route = MaterialPageRoute(
+                          builder: (context) => build(context));
+                      Navigator.pushReplacement(context, route);
+                      // Navigator.of(context).pop();
+                    },
+                    child: Text(
+                      "Cancel",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  OutlineButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20)),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      return false;
+                    },
+                    child: Text(
+                      "Discard",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  )
+                ],
+              ),
+            );
+            return true;
+          },
+        ),
         actions: [
           IconButton(
             icon: Icon(
@@ -282,29 +387,30 @@ class _ShowImageState extends State<ShowImage> {
               isBottomOpened = false;
               Navigator.of(context).pop();
             }
-            Navigator.of(context)
-                .push(MaterialPageRoute(
-              builder: (context) =>
-                  NewImage(widget.file, widget.animatedListKey),
-            ))
-                .then((value) {
-              if (value != null) {
-                tl_x = value[1];
-                tl_y = value[2];
-                tr_x = value[3];
-                tr_y = value[4];
-                bl_x = value[5];
-                bl_y = value[6];
-                br_x = value[7];
-                br_y = value[8];
-                setState(() {
-                  bytes = value[0];
-                  isGrayBytes = false;
-                  isOriginalBytes = false;
-                  isWhiteBoardBytes = false;
-                });
-              }
-            });
+            _cropImage();
+            // Navigator.of(context)
+            //     .push(MaterialPageRoute(
+            //   builder: (context) =>
+            //       NewImage(widget.file, widget.animatedListKey),
+            // ))
+            //     .then((value) {
+            //   if (value != null) {
+            //     tl_x = value[1];
+            //     tl_y = value[2];
+            //     tr_x = value[3];
+            //     tr_y = value[4];
+            //     bl_x = value[5];
+            //     bl_y = value[6];
+            //     br_x = value[7];
+            //     br_y = value[8];
+            //     setState(() {
+            //       bytes = value[0];
+            //       isGrayBytes = false;
+            //       isOriginalBytes = false;
+            //       isWhiteBoardBytes = false;
+            //     });
+            //   }
+            // });
           }
           if (index == 2) {
             if (isBottomOpened) {
@@ -372,7 +478,7 @@ class _ShowImageState extends State<ShowImage> {
           GestureDetector(
             onTap: () {
               if (originalBytes != null) {
-                print("original");
+                // print("original");
                 Navigator.of(context).pop();
                 isBottomOpened = false;
                 canvasType = "original";
@@ -417,7 +523,7 @@ class _ShowImageState extends State<ShowImage> {
           ),
           GestureDetector(
             onTap: () {
-              print("whiteboard");
+              // print("whiteboard");
               Navigator.of(context).pop();
               isBottomOpened = false;
               angle = 0;
@@ -462,7 +568,7 @@ class _ShowImageState extends State<ShowImage> {
           ),
           GestureDetector(
             onTap: () {
-              print("gray");
+              // print("gray");
               Navigator.of(context).pop();
               isBottomOpened = false;
               angle = 0;
@@ -566,7 +672,7 @@ class _ShowImageState extends State<ShowImage> {
       });
     });
     Timer(Duration(seconds: 7), () {
-      print("this started");
+      // print("this started");
       channel.invokeMethod('grayCompleted').then((value) {
         grayBytes = value;
         isGrayBytes = true;
@@ -655,11 +761,11 @@ class _ShowImageState extends State<ShowImage> {
                                                   setStateChild(
                                                     () {
                                                       selectedRadio = val;
-                                                      print(
-                                                          " my radio...$selectedRadio");
+                                                      // print(
+                                                      // " my radio...$selectedRadio");
                                                     },
                                                   );
-                                                  print("Radio $val");
+                                                  // print("Radio $val");
                                                 }),
                                             Text(
                                               "Pdf",
@@ -676,12 +782,12 @@ class _ShowImageState extends State<ShowImage> {
                                                   setStateChild(
                                                     () {
                                                       selectedRadio = val;
-                                                      print(
-                                                          " my radio...$selectedRadio");
+                                                      // print(
+                                                      //     " my radio...$selectedRadio");
                                                     },
                                                   );
                                                   setSelectedRadio(val);
-                                                  print("Radio 2 $val");
+                                                  // print("Radio 2 $val");
                                                 }),
                                             Text(
                                               "Image",
@@ -781,7 +887,7 @@ class _ShowImageState extends State<ShowImage> {
   setSelectedRadio(int val) {
     setState(() {
       selectedRadio = val;
-      print(" my radio...$selectedRadio");
+      // print(" my radio...$selectedRadio");
     });
   }
 
@@ -809,7 +915,7 @@ class _ShowImageState extends State<ShowImage> {
     List dir = root.listSync();
     for (var fileOrDir in dir) {
       if (fileOrDir is Directory) {
-        print(fileOrDir.path);
+        // print(fileOrDir.path);
         filesList.add(fileOrDir.path);
       }
     }
@@ -836,7 +942,7 @@ class _ShowImageState extends State<ShowImage> {
     final imgaeFileName = "IMG_${DateTime.now().millisecondsSinceEpoch}";
 
     await widget.file.writeAsBytes(bytes).then((_) async {
-      print(ImageSizGetter.getSize(widget.file));
+      // print(ImageSizGetter.getSize(widget.file));
       Provider.of<DocumentProvider>(context, listen: false).saveDocument(
           directoryname: root,
           name: imgaeFileName,
@@ -861,7 +967,7 @@ class _ShowImageState extends State<ShowImage> {
     final imgaeFileName = "IMG_${DateTime.now().millisecondsSinceEpoch}";
 
     await widget.file.writeAsBytes(bytes).then((_) async {
-      print(ImageSizGetter.getSize(widget.file));
+      // print(ImageSizGetter.getSize(widget.file));
       Provider.of<DocumentProvider>(context, listen: false).saveDocument(
           directoryname: root,
           name: imgaeFileName,
